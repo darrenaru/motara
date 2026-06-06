@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transaksi Obat - MOTARA</title>
+    <link rel="icon" type="" href="assets/img/logo-light.svg">
+    <link rel="stylesheet" href="css/medicine-transaction.css">
+    <link rel="stylesheet" href="css/navbar-notification.css">
+    <link rel="stylesheet" href="css/animations.css">
+    <style>
+        .form-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .form-section-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #2c3e50;
+        }
+        
+        #tanggalKedaluwarsa-group, #nomorBatch-group {
+            display: none;
+        }
+        
+        .batch-info {
+            background: #e3f2fd;
+            border-left: 4px solid #2196F3;
+            padding: 12px;
+            margin-top: 10px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .batch-info strong {
+            color: #1976D2;
+        }
+        
+        /* Styling for transaction items */
+        .transaction-item {
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .transaction-item .item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .transaction-item .item-header h4 {
+            margin: 0;
+            color: #2c3e50;
+            font-size: 16px;
+        }
+
+        .remove-item-btn {
+            background: #fee2e2;
+            color: #dc2626;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s ease;
+        }
+
+        .remove-item-btn:hover {
+            background: #fecaca;
+        }
+
+        .add-item-btn {
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .add-item-btn:hover {
+            background: #059669;
+            transform: translateY(-1px);
+        }
+
+        .add-item-btn:active {
+            transform: translateY(0);
+        }
+        
+        .batch-section {
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            border-left: 3px solid #3b82f6;
+        }
+        
+        /* Batch selection button */
+        .select-batch-btn {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 10px;
+        }
+
+        .select-batch-btn:hover {
+            background: #2563eb;
+            transform: translateY(-1px);
+        }
+
+        .select-batch-btn:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        /* Batch selection table */
+        .batch-selection-container table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        .batch-selection-container th {
+            background: #f3f4f6;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 14px;
+            color: #374151;
+        }
+
+        .batch-selection-container td {
+            padding: 12px;
+            border-bottom: 1px solid #e5e7eb;
+            font-size: 14px;
+        }
+
+        .batch-selection-container tr:hover {
+            background: #f9fafb;
+        }
+
+        .batch-checkbox {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .batch-amount-input {
+            padding: 6px 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            font-size: 14px;
+            width: 80px;
+        }
+
+        .batch-amount-input:disabled {
+            background: #f3f4f6;
+            cursor: not-allowed;
+        }
+
+        .batch-summary {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #10b981;
+        }
+
+        .expired {
+            color: #ef4444;
+            font-weight: 600;
+        }
+
+        .expiring-soon {
+            color: #f39c12;
+            font-weight: 600;
+        }
+
+        .valid {
+            color: #10b981;
+        }
+        
+        @media (max-width: 768px) {
+            .action-btn {
+                padding: 5px 10px;
+                font-size: 12px;
+                margin-bottom: 4px;
+                width: 100%;
+            }
+            
+            .transaction-item {
+                padding: 12px;
+            }
+            
+            .batch-selection-container table {
+                font-size: 12px;
+            }
+            
+            .batch-selection-container th,
+            .batch-selection-container td {
+                padding: 8px 4px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-container">
+            <div class="navbar-brand">
+                <div class="logo-icon">
+                    <img src="assets/img/logo-light.svg" alt="">
+                </div>
+                <span class="brand-text">MOTARA</span>
+            </div>
+
+            <div class="navbar-menu">
+                <!-- Menu akan di-generate otomatis oleh navbar-role-manager.js -->
+            </div>
+
+            <div class="navbar-right">
+                <button class="notification-btn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                        <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                    </svg>
+                    <span class="notification-badge"></span>
+                </button>
+
+                <div class="profile-dropdown">
+                    <button class="profile-btn">
+                        <div class="profile-avatar">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                <circle cx="12" cy="7" r="4"/>
+                            </svg>
+                        </div>
+                        <span class="profile-name">Staff</span>
+                        <svg class="dropdown-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="6 9 12 15 18 9"/>
+                        </svg>
+                    </button>
+                    <div class="dropdown-menu profile-menu">
+                        <div class="profile-info">
+                            <div class="profile-avatar-large">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                    <circle cx="12" cy="7" r="4"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <div class="profile-info-name">Staff Gudang</div>
+                                <div class="profile-info-email">staff@motara.com</div>
+                            </div>
+                        </div>
+                        <div class="dropdown-divider"></div>
+                        <a href="#" class="dropdown-item logout">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                                <polyline points="16 17 21 12 16 7"/>
+                                <line x1="21" y1="12" x2="9" y2="12"/>
+                            </svg>
+                            Keluar
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <button class="mobile-menu-btn">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="3" y1="12" x2="21" y2="12"/>
+                    <line x1="3" y1="6" x2="21" y2="6"/>
+                    <line x1="3" y1="18" x2="21" y2="18"/>
+                </svg>
+            </button>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h1>Pencatatan Obat Keluar & Masuk</h1>
+
+        <!-- Tab Navigation -->
+        <div class="tab-navigation">
+            <button class="tab-btn active" data-tab="keluar">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                    <polyline points="16 17 21 12 16 7"/>
+                    <line x1="21" y1="12" x2="9" y2="12"/>
+                </svg>
+                Obat Keluar
+            </button>
+            <button class="tab-btn" data-tab="masuk">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+                    <polyline points="10 17 15 12 10 7"/>
+                    <line x1="15" y1="12" x2="3" y2="12"/>
+                </svg>
+                Obat Masuk
+            </button>
+        </div>
+
+        <div class="controls">
+            <div class="search-box">
+                <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"/>
+                    <path d="m21 21-4.35-4.35"/>
+                </svg>
+                <input type="text" id="searchInput" placeholder="Cari obat, tujuan, atau keterangan...">
+            </div>
+
+            <div class="filter-group">
+                <input type="date" id="filterDate" class="date-filter">
+                
+                <button class="add-btn" onclick="openModal()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="12" y1="5" x2="12" y2="19"/>
+                        <line x1="5" y1="12" x2="19" y2="12"/>
+                    </svg>
+                    <span id="btnText">Catat Obat Keluar</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Summary Cards -->
+        <div class="summary-cards">
+            <div class="summary-card keluar">
+                <div class="summary-icon">
+                    <img src="assets/icons/out.svg" alt="" width="24" height="24">
+                </div>
+                <div class="summary-info">
+                    <div class="summary-label">Total Obat Keluar</div>
+                    <div class="summary-value" id="totalKeluar">0</div>
+                    <div class="summary-sublabel">Hari ini</div>
+                </div>
+            </div>
+
+            <div class="summary-card masuk">
+                <div class="summary-icon">
+                    <img src="assets/icons/in.svg" alt="" width="24" height="24">
+                </div>
+                <div class="summary-info">
+                    <div class="summary-label">Total Obat Masuk</div>
+                    <div class="summary-value" id="totalMasuk">0</div>
+                    <div class="summary-sublabel">Hari ini</div>
+                </div>
+            </div>
+
+            <div class="summary-card total">
+                <div class="summary-icon">
+                    <img src="assets/icons/transaction.svg" alt="" width="24" height="24">
+                </div>
+                <div class="summary-info">
+                    <div class="summary-label">Total Transaksi</div>
+                    <div class="summary-value" id="totalTransaksi">0</div>
+                    <div class="summary-sublabel">Hari ini</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Tanggal</th>
+                        <th>Nama Obat</th>
+                        <th>Jumlah</th>
+                        <th id="tujuanHeader">Tujuan</th>
+                        <th id="batchHeader">Nomor Batch</th>
+                        <th id="fakturHeader">Nomor Faktur</th>
+                        <th id="kedaluwarsaHeader">Tanggal Kedaluwarsa</th>
+                        <th>Keterangan</th>
+                        <th>Staff</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Modal Form untuk Multiple Items -->
+    <div class="modal" id="modal">
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="modal-header">
+                <h2 id="modalTitle">Catat Obat Keluar</h2>
+            </div>
+            <form id="transaksiForm">
+                <!-- Section: Form Input Transaksi -->
+                <div id="transactionSection">
+                    <div class="form-section-title">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline-block; vertical-align: middle; margin-right: 8px;">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                            <polyline points="14 2 14 8 20 8"/>
+                            <line x1="16" y1="13" x2="8" y2="13"/>
+                            <line x1="16" y1="17" x2="8" y2="17"/>
+                            <polyline points="10 9 9 9 8 9"/>
+                        </svg>
+                        Informasi Transaksi Umum
+                    </div>
+                    
+                    <div class="form-group" id="tujuanGroup">
+                        <label>Tujuan Distribusi <span style="color: red;">*</span></label>
+                        <select id="tujuan">
+                            <option value="">-- Pilih Tujuan --</option>
+                            <option value="Sentra Medika Hospital Minahasa Utara">Sentra Medika Hospital Minahasa Utara</option>
+                            <option value="RSU GMIM Tonsea Airmadidi">RSU GMIM Tonsea Airmadidi</option>
+                            <option value="RSUD Maria Walanda Maramis">RSUD Maria Walanda Maramis</option>
+                            <option value="Puskesmas Airmadidi">Puskesmas Airmadidi</option>
+                            <option value="Puskesmas Kauditan">Puskesmas Kauditan</option>
+                            <option value="Puskesmas Kema">Puskesmas Kema</option>
+                            <option value="Puskesmas Dimembe">Puskesmas Dimembe</option>
+                            <option value="Puskesmas Likupang">Puskesmas Likupang</option>
+                            <option value="Lainnya">Lainnya</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group" id="tujuanLainnyaGroup" style="display: none;">
+                        <label>Tujuan Lainnya <span style="color: red;">*</span></label>
+                        <input type="text" id="tujuanLainnya" placeholder="Masukkan tujuan lainnya...">
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <div class="form-group">
+                            <label>Tanggal Transaksi <span style="color: red;">*</span></label>
+                            <input type="date" id="tanggalTransaksi" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Staff Penanggung Jawab <span style="color: red;">*</span></label>
+                            <select id="idStaff" required>
+                                <option value="">-- Pilih Staff --</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Keterangan Transaksi (Opsional)</label>
+                        <textarea id="keterangan" rows="2" placeholder="Masukkan keterangan transaksi..."></textarea>
+                    </div>
+                    
+                    <hr style="margin: 20px 0; border: 1px solid #e0e0e0;">
+                    
+                    <!-- Items Section -->
+                    <div class="form-section-title">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline-block; vertical-align: middle; margin-right: 8px;">
+                            <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/>
+                        </svg>
+                        Daftar Obat
+                        <button type="button" class="add-item-btn" onclick="addTransactionItem()" 
+                                style="float: right; background: #10b981; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 14px;">
+                            + Tambah Obat
+                        </button>
+                    </div>
+                    
+                    <div id="transactionItems">
+                        <!-- Items will be added here dynamically -->
+                    </div>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" onclick="closeModal()">Batal</button>
+                    <button type="submit" class="btn-primary">
+                        <span id="submitBtnText">Simpan Transaksi</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Detail -->
+    <div class="modal" id="detailModal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="closeDetailModal()">×</button>
+            <div class="modal-header">
+                <h2>Detail Transaksi</h2>
+            </div>
+            <div class="detail-content" id="detailContent">
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn-secondary" onclick="closeDetailModal()">Tutup</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Batch Selection -->
+    <div class="modal" id="batchSelectionModal">
+        <!-- Content will be generated dynamically -->
+    </div>
+
+    <!-- Navbar Role Manager - WAJIB -->
+    <script src="js/navbar-role-manager.js"></script>
+    <script src="js/kepala-instalasi-restrictions.js"></script>
+    <script src="js/medicine-transaction.js"></script>
+    <script src="js/navbar-notification.js"></script>
+</body>
+</html>

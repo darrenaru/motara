@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laporan Distribusi Obat - MOTARA</title>
+    <link rel="icon" type="" href="assets/img/logo-light.svg">
+    <link rel="stylesheet" href="css/medicine-stock.css">
+    <link rel="stylesheet" href="css/navbar-notification.css">
+    <link rel="stylesheet" href="css/animations.css">
+    <style>
+        .report-container {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            margin-bottom: 30px;
+        }
+
+        .report-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #f3f4f6;
+        }
+
+        .report-header h2 {
+            font-size: 24px;
+            color: #2d3748;
+            margin-bottom: 8px;
+        }
+
+        .report-filters {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+            padding: 20px;
+            background: #f9fafb;
+            border-radius: 12px;
+        }
+
+        .filter-item label {
+            display: block;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .filter-item select,
+        .filter-item input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .report-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+
+        .btn-generate {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-generate:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+        }
+
+        .btn-print, .btn-export {
+            padding: 12px 24px;
+            background: white;
+            border: 2px solid #10b981;
+            border-radius: 10px;
+            color: #10b981;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-print:hover, .btn-export:hover {
+            background: #f0fdf4;
+        }
+
+        .report-table-wrapper {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        table thead {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+        }
+
+        table th {
+            padding: 12px 8px;
+            text-align: center;
+            font-weight: 600;
+            border: 1px solid #e5e7eb;
+            font-size: 12px;
+        }
+
+        table td {
+            padding: 10px 8px;
+            border: 1px solid #e5e7eb;
+            text-align: center;
+        }
+
+        table tbody tr:nth-child(even) {
+            background-color: #f9fafb;
+        }
+
+        table tbody tr:hover {
+            background-color: #f0fdf4;
+        }
+
+        .destination-group {
+            background: #f0fdf4;
+            font-weight: 700;
+            color: #059669;
+        }
+
+        .total-row {
+            background: #fef3c7 !important;
+            font-weight: 700;
+        }
+
+        .month-column {
+            min-width: 70px;
+        }
+
+        .stock-highlight {
+            font-weight: 700;
+            color: #059669;
+        }
+
+        .stock-warning {
+            color: #dc2626;
+            font-weight: 700;
+        }
+
+        @media print {
+            .navbar, .report-filters, .report-actions, .controls {
+                display: none !important;
+            }
+            .report-container {
+                box-shadow: none;
+                padding: 0;
+            }
+            body {
+                background: white;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .report-actions {
+                flex-direction: column;
+            }
+            .btn-generate, .btn-print, .btn-export {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-container">
+            <div class="navbar-brand">
+                <div class="logo-icon">
+                    <img src="assets/img/logo-light.svg" alt="">
+                </div>
+                <span class="brand-text">MOTARA</span>
+            </div>
+            <div class="navbar-menu"></div>
+            <div class="navbar-right">
+                <button class="notification-btn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                        <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                    </svg>
+                    <span class="notification-badge"></span>
+                </button>
+                <div class="profile-dropdown">
+                    <button class="profile-btn">
+                        <div class="profile-avatar">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                <circle cx="12" cy="7" r="4"/>
+                            </svg>
+                        </div>
+                        <span class="profile-name">Admin</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h1>Laporan Distribusi Obat Bulanan</h1>
+
+        <div class="report-container">
+            <div class="report-header">
+                <h2>INSTALASI FARMASI KABUPATEN MINAHASA UTARA</h2>
+                <p>Laporan Distribusi Obat Berdasarkan Tujuan</p>
+                <p id="reportPeriod"></p>
+            </div>
+
+            <div class="report-filters">
+                <div class="filter-item">
+                    <label>Tahun Laporan</label>
+                    <select id="filterTahun">
+                        <option value="2025">2025</option>
+                        <option value="2024">2024</option>
+                        <option value="2023">2023</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <label>Nama Obat</label>
+                    <select id="filterObat">
+                        <option value="all">Semua Obat</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <label>Tujuan Distribusi</label>
+                    <select id="filterTujuan">
+                        <option value="all">Semua Tujuan</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="report-actions">
+                <button class="btn-generate" onclick="generateReport()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                        <polyline points="7 10 12 15 17 10"/>
+                        <line x1="12" y1="15" x2="12" y2="3"/>
+                    </svg>
+                    Generate Laporan
+                </button>
+                <button class="btn-print" onclick="printReport()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="6 9 6 2 18 2 18 9"/>
+                        <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+                        <rect x="6" y="14" width="12" height="8"/>
+                    </svg>
+                    Cetak
+                </button>
+                <button class="btn-export" onclick="exportToExcel()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                        <line x1="16" y1="13" x2="8" y2="13"/>
+                        <line x1="16" y1="17" x2="8" y2="17"/>
+                    </svg>
+                    Export Excel
+                </button>
+            </div>
+
+            <div class="report-table-wrapper">
+                <table id="reportTable">
+                    <thead>
+                        <tr>
+                            <th rowspan="2">No</th>
+                            <th rowspan="2">Nama Obat</th>
+                            <th rowspan="2">Dosis</th>
+                            <th rowspan="2">Tujuan Distribusi</th>
+                            <th rowspan="2">Stok Awal</th>
+                            <th colspan="12">Distribusi per Bulan (Unit)</th>
+                            <th rowspan="2">Total Keluar</th>
+                            <th rowspan="2">Stok Akhir</th>
+                        </tr>
+                        <tr>
+                            <th class="month-column">Jan</th>
+                            <th class="month-column">Feb</th>
+                            <th class="month-column">Mar</th>
+                            <th class="month-column">Apr</th>
+                            <th class="month-column">Mei</th>
+                            <th class="month-column">Jun</th>
+                            <th class="month-column">Jul</th>
+                            <th class="month-column">Agu</th>
+                            <th class="month-column">Sep</th>
+                            <th class="month-column">Oct</th>
+                            <th class="month-column">Nov</th>
+                            <th class="month-column">Des</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reportTableBody">
+                        <tr>
+                            <td colspan="19" class="empty-state">
+                                <p>Klik "Generate Laporan" untuk menampilkan data</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const OBAT_API_URL = 'php/api.php';
+        const TRANSACTION_API_URL = 'php/transaction-api.php';
+
+        let obatData = [];
+        let transactionData = [];
+        let tujuanList = [];
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadInitialData();
+        });
+
+        async function loadInitialData() {
+            try {
+                const obatResponse = await fetch(`${OBAT_API_URL}?action=read`);
+                const obatResult = await obatResponse.json();
+                
+                if (obatResult.success) {
+                    obatData = obatResult.data;
+                    populateObatFilter();
+                }
+
+                const transResponse = await fetch(`${TRANSACTION_API_URL}?action=read&tipe=keluar`);
+                const transResult = await transResponse.json();
+                
+                if (transResult.success) {
+                    transactionData = transResult.data;
+                    populateTujuanFilter();
+                }
+            } catch (error) {
+                console.error('Error loading data:', error);
+            }
+        }
+
+        function populateObatFilter() {
+            const select = document.getElementById('filterObat');
+            select.innerHTML = '<option value="all">Semua Obat</option>';
+            
+            obatData.forEach(obat => {
+                const option = document.createElement('option');
+                option.value = obat.id;
+                option.textContent = `${obat.nama} - ${obat.dosis}`;
+                select.appendChild(option);
+            });
+        }
+
+        function populateTujuanFilter() {
+            const destinations = [...new Set(transactionData.map(t => t.tujuan).filter(t => t))];
+            const select = document.getElementById('filterTujuan');
+            select.innerHTML = '<option value="all">Semua Tujuan</option>';
+            
+            destinations.forEach(dest => {
+                const option = document.createElement('option');
+                option.value = dest;
+                option.textContent = dest;
+                select.appendChild(option);
+            });
+        }
+
+        async function generateReport() {
+            const tahun = document.getElementById('filterTahun').value;
+            const filterObatId = document.getElementById('filterObat').value;
+            const filterTujuan = document.getElementById('filterTujuan').value;
+
+            document.getElementById('reportPeriod').textContent = `Periode: Januari - Desember ${tahun}`;
+
+            const startDate = `${tahun}-01-01`;
+            const endDate = `${tahun}-12-31`;
+
+            try {
+                const response = await fetch(`${TRANSACTION_API_URL}?action=read&tipe=keluar&start_date=${startDate}&end_date=${endDate}`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    transactionData = result.data;
+                    renderReport(filterObatId, filterTujuan, tahun);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Terjadi kesalahan saat memuat data');
+            }
+        }
+
+        function renderReport(filterObatId, filterTujuan, tahun) {
+            const tbody = document.getElementById('reportTableBody');
+            
+            let filteredObat = obatData;
+            if (filterObatId !== 'all') {
+                filteredObat = obatData.filter(obat => obat.id == filterObatId);
+            }
+
+            const destinations = filterTujuan === 'all' 
+                ? [...new Set(transactionData.map(t => t.tujuan).filter(t => t))].sort()
+                : [filterTujuan];
+
+            if (destinations.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="19" class="empty-state"><p>Tidak ada data distribusi</p></td></tr>';
+                return;
+            }
+
+            let html = '';
+            let no = 1;
+
+            destinations.forEach(destination => {
+                html += `<tr class="destination-group"><td colspan="19" style="text-align: left; padding-left: 15px;"> ${destination}</td></tr>`;
+
+                filteredObat.forEach(obat => {
+                    const transactions = transactionData.filter(t => 
+                        t.id_obat === obat.id && 
+                        t.tujuan === destination
+                    );
+
+                    if (transactions.length === 0) return;
+
+                    const monthlyData = Array(12).fill(0);
+                    let totalKeluar = 0;
+
+                    transactions.forEach(trans => {
+                        const date = new Date(trans.tanggal_transaksi);
+                        if (date.getFullYear() == tahun) {
+                            const month = date.getMonth();
+                            const jumlah = parseInt(trans.jumlah) || 0;
+                            monthlyData[month] += jumlah;
+                            totalKeluar += jumlah;
+                        }
+                    });
+
+                    const stokAwal = obat.stok + totalKeluar;
+                    const stokAkhir = obat.stok;
+
+                    html += `
+                        <tr>
+                            <td>${no++}</td>
+                            <td style="text-align: left;">${obat.nama}</td>
+                            <td>${obat.dosis}</td>
+                            <td style="text-align: left;">${destination}</td>
+                            <td class="stock-highlight">${stokAwal}</td>
+                            ${monthlyData.map(m => `<td>${m > 0 ? m : '-'}</td>`).join('')}
+                            <td style="font-weight: 700; color: #dc2626;">${totalKeluar}</td>
+                            <td class="${stokAkhir < 10 ? 'stock-warning' : 'stock-highlight'}">${stokAkhir}</td>
+                        </tr>
+                    `;
+                });
+            });
+
+            tbody.innerHTML = html;
+        }
+
+        function printReport() {
+            window.print();
+        }
+
+        function exportToExcel() {
+            const table = document.getElementById('reportTable');
+            const rows = table.querySelectorAll('tr');
+            
+            let csv = [];
+            rows.forEach(row => {
+                const cols = row.querySelectorAll('td, th');
+                const rowData = Array.from(cols).map(col => {
+                    let text = col.textContent.trim();
+                    return `"${text}"`;
+                }).join(',');
+                if (rowData) csv.push(rowData);
+            });
+
+            const csvContent = csv.join('\n');
+            const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            
+            const tahun = document.getElementById('filterTahun').value;
+            link.setAttribute('href', url);
+            link.setAttribute('download', `Laporan_Distribusi_${tahun}.csv`);
+            link.style.visibility = 'hidden';
+            
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    </script>
+
+    <script src="js/navbar-role-manager.js"></script>
+    <script src="js/navbar-notification.js"></script>
+</body>
+</html>
